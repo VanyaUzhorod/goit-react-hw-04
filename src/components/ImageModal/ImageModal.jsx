@@ -12,7 +12,12 @@ const ImageModal = ({ isOpen, imageUrl, onRequestClose }) => {
       className={css.Modal}
       overlayClassName={css.Overlay}
     >
-      <img src={imageUrl} alt="Large view" className={css.modalImage} />
+      <img
+        src={imageUrl}
+        alt="Large view"
+        width={300}
+        className={css.modalImage}
+      />
     </Modal>
   );
 };

@@ -10,9 +10,9 @@ import SearchBar from "./components/SearchBar/SearchBar";
 import fetchRequest from "./services/api.js";
 
 const App = () => {
-  const [hits, setHits] = useState([]);
+  const [hit, setHit] = useState([]);
   const [query, setQuery] = useState("");
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [page, setPage] = useState(1);
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -21,7 +21,7 @@ const App = () => {
   useEffect(() => {
     if (!query) return;
     const getData = async () => {
-      setLoading(true);
+      setIsLoading(true);
       setIsError(false);
 
       try {
@@ -42,7 +42,7 @@ const App = () => {
             position: "top-left",
           });
         }
-        setHits((prev) => [...prev, ...data]);
+        setHit((prev) => [...prev, ...data]);
       } catch (error) {
         console.error(error);
         setIsError(true);
@@ -64,7 +64,7 @@ const App = () => {
           }
         );
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
     getData();
@@ -76,7 +76,7 @@ const App = () => {
 
   const handleSetQuery = (newQuery) => {
     setQuery(newQuery);
-    setHits([]);
+    setHit([]);
     setPage(1);
   };
 
@@ -96,14 +96,14 @@ const App = () => {
       <SearchBar request={handleSetQuery} />
 
       {!isError ? (
-        <ImageGallery image={hits} onImageClick={openModal} />
+        <ImageGallery image={hit} onImageClick={openModal} />
       ) : (
         <ErrorMessage />
       )}
 
       <Loader loading={isLoading} />
 
-      {hits.length > 0 && !isLoading && !isError && (
+      {hit.length > 0 && !isLoading && !isError && (
         <LoadMoreBtn handleClick={handleClick} />
       )}
       <ImageModal

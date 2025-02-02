@@ -3,7 +3,7 @@ import axios from "axios";
 const API_KEY = "9LIPfd5ZKygIEmPO9NWTIxJATudgrLcLukeJH7Jmt3M";
 const API_URL = "https://api.unsplash.com/search/photos";
 
-const fetchRequest = async (query) => {
+const fetchRequest = async (query, page) => {
   if (!query.trim()) {
     return [];
   }
@@ -12,6 +12,7 @@ const fetchRequest = async (query) => {
     const response = await axios.get(API_URL, {
       params: {
         query: query,
+        page,
         client_id: API_KEY,
         per_page: 16,
       },

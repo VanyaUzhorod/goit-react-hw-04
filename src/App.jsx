@@ -1,35 +1,118 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Toaster, toast } from "react-hot-toast";
+import { useEffect, useState } from "react";
+import "./App.css";
+import ErrorMessage from "./components/ErrorMessage/ErrorMessage.jsx";
+import ImageGallery from "./components/ImageGallery/ImageGallery.jsx";
+import ImageModal from "./components/ImageModal/ImageModal.jsx";
+import Loader from "./components/Loader/Loader.jsx";
+import LoadMoreBtn from "./components/LoadMoreBtn/LoadMoreBtn.jsx";
+import SearchBar from "./components/SearchBar/SearchBar";
+import fetchRequest from "./services/api.js";
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [hits, setHits] = useState([]);
+  const [query, setQuery] = useState("");
+  const [isLoading, setLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [page, setPage] = useState(1);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
+
+  useEffect(() => {
+    if (!query) return;
+    const getData = async () => {
+      setLoading(true);
+      setIsError(false);
+
+      try {
+        const data = await fetchRequest(query, page);
+        if (data.length === 0) {
+          toast.error("No images found for this request! 😕", {
+            style: {
+              background: "#b1cc29",
+              color: "#fff",
+              fontWeight: "bold",
+              padding: "12px",
+              borderRadius: "10px",
+            },
+            iconTheme: {
+              primary: "#fff",
+              secondary: "#d32f2f",
+            },
+            position: "top-left",
+          });
+        }
+        setHits((prev) => [...prev, ...data]);
+      } catch (error) {
+        console.error(error);
+        setIsError(true);
+        toast.error(
+          "There was an error loading images, please try again later😢",
+          {
+            style: {
+              background: "red",
+              color: "#fff",
+              fontWeight: "bold",
+              padding: "12px",
+              borderRadius: "10px",
+            },
+            iconTheme: {
+              primary: "#fff",
+              secondary: "#d32f2f",
+            },
+            position: "top-left",
+          }
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    getData();
+  }, [query, page]);
+
+  const handleClick = () => {
+    setPage((prev) => prev + 1);
+  };
+
+  const handleSetQuery = (newQuery) => {
+    setQuery(newQuery);
+    setHits([]);
+    setPage(1);
+  };
+
+  const openModal = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+    setSelectedImage("");
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+      <Toaster />
+      <SearchBar request={handleSetQuery} />
 
-export default App
+      {!isError ? (
+        <ImageGallery image={hits} onImageClick={openModal} />
+      ) : (
+        <ErrorMessage />
+      )}
+
+      <Loader loading={isLoading} />
+
+      {hits.length > 0 && !isLoading && !isError && (
+        <LoadMoreBtn handleClick={handleClick} />
+      )}
+      <ImageModal
+        isOpen={modalIsOpen}
+        imageUrl={selectedImage}
+        onRequestClose={closeModal}
+      />
+    </>
+  );
+};
+
+export default App;
